@@ -547,7 +547,6 @@ cpu_cores_interactive()
 	  # edit the buildx.sh patch file ;)
 	  sed -i -e "s/make -j 1/$makeCommand/g" $WORKINGDIR/buildx_patch.diff
 	  # create a file flag to say we've already done this
-	  touch $WORKINGDIR/PARALLELMAKE
 	  dialogtext="Ok, the optimization has been made.\n\nLooks like your system is going to be working hard soon ;)\n\nClick OK to proceed with the compilation."
 	  info_window
 	;;
@@ -564,7 +563,6 @@ cpu_cores_noninteractive()
     if [ "$PARALLELMAKE" == "1" ]
     then
       sed -i -e "s/make -j 1/$makeCommand/g" $WORKINGDIR/buildx_patch.diff
-      touch $WORKINGDIR/PARALLELMAKE
     fi
 }
 
@@ -627,6 +625,8 @@ alter_xrdp_source()
   if [ "$PARALLELMAKE" == "1" ]
   then
   	patch -b -d $WORKINGDIR/xrdp/xorg/X11R7.6 buildx.sh < $WORKINGDIR/buildx_patch.diff
+	#revert change after apply the patch
+	sed -i -e "s/$makeCommand/make -j 1/g" $WORKINGDIR/buildx_patch.diff
   fi
   
   # Patch rdp Makefile
