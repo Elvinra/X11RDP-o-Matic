@@ -395,7 +395,7 @@ compile_xrdp_interactive()
   cd xrdp-$VERSION;
   
   #Step 3 : Use dh-make to create the debian directory package template...
-  ( dh_make --single --native -yes ) 2>&1 | dialog  --progressbox "Preparing xrdp source to make a Debian package..." 50 100
+  ( echo | dh_make --single --native ) 2>&1 | dialog  --progressbox "Preparing xrdp source to make a Debian package..." 50 100
   
   #Step 4 : edit/configure the debian directory...
   cd debian
@@ -438,7 +438,7 @@ compile_xrdp_noninteractive()
   cd xrdp-$VERSION
   
   #Step 3 : Use dh-make to create the debian directory package template...
-  dh_make --single --native -yes
+  echo | dh_make --single --native
   
   #Step 4 : edit/configure the debian directory...
   cd debian
@@ -537,9 +537,6 @@ calc_cpu_cores()
 
 cpu_cores_interactive()
 {
-  # See how many cpu cores we have to play with - we can speed up compilation if we have more cores ;)
-  if [[ ! -e $WORKINGDIR/PARALLELMAKE && PARALLELMAKE = 1 ]] # No need to perform this if for some reason we've been here before...
-  then
     if [ "$PARALLELMAKE" == "1" ]
     then
       dialogtext="Good news!\n\nYou can speed up the compilation because there are $Cores CPU cores available to this system.\n\nI can patch the X11rdp build script for you, to utilize the additional CPU cores.\nWould you like me to do this for you?\n\n(Answering Yes will add the \"-j [#cores+1]\" switch to the make command in the build script.\n\nIn this case it will be changed to \"$makeCommand\")."
@@ -560,19 +557,15 @@ cpu_cores_interactive()
 	;;
       esac
     fi
-  fi
 }
 
 cpu_cores_noninteractive()
 {
-  if [ ! -e $WORKINGDIR/PARALLELMAKE ] # No need to perform this if for some reason we've been here before...
-  then
     if [ "$PARALLELMAKE" == "1" ]
     then
       sed -i -e "s/make -j 1/$makeCommand/g" $WORKINGDIR/buildx_patch.diff
       touch $WORKINGDIR/PARALLELMAKE
     fi
-  fi
 }
 
 welcome_message()
@@ -610,12 +603,6 @@ calculate_version_num()
 # place all the built binaries and files. 
 make_X11rdp_env()
 {
-  if [ -e $X11DIR ] && [ $X11RDP -eq 1 ]
-  then
-    rm -rf $X11DIR
-    mkdir -p $X11DIR
-  fi
-
   if [ -e $WORKINGDIR/xrdp ]
   then
     rm -rf $WORKINGDIR/xrdp
@@ -784,17 +771,6 @@ remove_currently_installed_X11rdp()
   fi
 }
 
-check_for_opt_directory()
-{
-  if [[ ! -e /opt ]]
-  then
-    echo "Did not find a /opt directory... creating it."
-    echo $LINE
-    mkdir /opt
-  fi
-}
-
-
 download_and_extract_libturbojpeg()
 {
   cd $WORKINGDIR
@@ -871,9 +847,6 @@ cleanup()
 # Main stuff starts here #
 ##########################
 
-# Check for existence of a /opt directory, and create it if it doesn't exist.
-check_for_opt_directory
-
 # Figure out what version number to use for the debian packages
 calculate_version_num
 
@@ -881,7 +854,7 @@ calculate_version_num
 trap control_c SIGINT
 
 if [ "$X11RDP" == "1" ]; then
-  echo " *** Will remove the contents of $X11DIR and $WORKINGDIR/xrdp-$VERSION ***"
+  echo " *** Will remove the contents of $WORKINGDIR/xrdp-$VERSION ***"
   echo
 fi
 
